@@ -1,0 +1,9 @@
+{
+  "episode01": {
+    "compositionId": "Episode01",
+    "audioDir": "audio",
+    "analysisFile": "src/generated/episode01.audio.json",
+    "output": "renders/starting-from-zero-episode-01.mp4",
+    "draftOutput": "renders/starting-from-zero-episode-01-DRAFT-no-narration.mp4"
+  }
+}

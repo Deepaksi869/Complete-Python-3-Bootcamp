@@ -1,0 +1,27 @@
+{
+  "name": "starting-from-zero",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Code-generated animated storytelling system for the 'Starting From Zero' Instagram Reel series.",
+  "type": "module",
+  "scripts": {
+    "preview:episode01": "node scripts/studio.mjs episode01",
+    "render:episode01": "node scripts/render-episode.mjs episode01",
+    "render:draft:episode01": "node scripts/render-episode.mjs episode01 --draft",
+    "prepare:episode01": "node scripts/prepare-episode.mjs episode01",
+    "sfx": "node scripts/generate-sfx.mjs",
+    "typecheck": "tsc --noEmit",
+    "stills:episode01": "node scripts/stills.mjs episode01"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.546",
+    "@remotion/fonts": "4.0.546",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.546"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

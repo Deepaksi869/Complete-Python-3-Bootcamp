@@ -1,0 +1,9 @@
+{
+  "hasVoiceover": false,
+  "voiceoverFile": null,
+  "musicFile": null,
+  "durationSec": 0,
+  "speechStart": 0,
+  "speechEnd": 0,
+  "silences": []
+}
