@@ -15,8 +15,8 @@ export const characterDesign = {
   skinHighlight: '#c48d67',
   lips: '#7a4635',
   hair: '#17120f',
-  hairHighlight: '#3a2e27',
-  beard: '#241a15',
+  hairHighlight: '#4a3b31',
+  beard: '#271d17',
   eyes: '#1a110c',
   sclera: '#efe6dc',
   brows: '#140f0c',
@@ -45,8 +45,8 @@ export const characterDesign = {
   headHalfWidth: 25,
   headHalfDepth: 28,
   noseLength: 6.5,
-  beardFullness: 1, // 0 = stubble, 1 = full short beard
-  hairVolume: 1, // 0 = close crop, 1 = textured quiff
+  beardFullness: 0.45, // 0 = stubble, 1 = full short beard (0.45 = neatly trimmed)
+  hairVolume: 0.75, // 0 = close crop, 1 = textured quiff (short natural cut)
 } as const;
 
 export type CharacterDesign = typeof characterDesign;

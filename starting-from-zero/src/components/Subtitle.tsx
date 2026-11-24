@@ -42,6 +42,9 @@ export const Captions: React.FC<{timeline: Timeline}> = ({timeline}) => {
             transform: `translateY(${(1 - pop) * 14}px) scale(${0.96 + 0.04 * pop})`,
             textShadow: '0 3px 0 rgba(0,0,0,0.55), 0 0 24px rgba(0,0,0,0.65), 0 0 6px rgba(0,0,0,0.8)',
             maxWidth: 880,
+            padding: '10px 26px 14px',
+            borderRadius: 22,
+            background: 'rgba(5,8,20,0.32)',
           }}
         >
           {chunk.words.map((w, i) => {

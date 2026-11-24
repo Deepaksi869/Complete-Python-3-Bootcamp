@@ -16,24 +16,26 @@ import {TitleStack} from '../components/Typography';
 import {Ambience, Sfx} from '../components/Sound';
 import {APT_FACE} from './Scene01Present';
 import {palette} from '../theme/palette';
+import {lighting} from '../theme/lighting';
 import {ease, ramp} from '../lib/anim';
 
 export const Scene06BuildingAgain: React.FC<SceneProps> = ({scene}) => {
   const frame = useCurrentFrame();
   const D = scene.durationInFrames;
   const b1 = cue(scene, 'b1');
-  const b2 = cue(scene, 'b2');
-  const b3 = cue(scene, 'b3');
-  const b4 = cue(scene, 'b4');
-  const b5 = cue(scene, 'b5');
+  const L = b1.end - b1.start;
+  // "This time, I brought | experience, | ideas, | and a plan."
+  const expAt = Math.round(b1.start + L * 0.38);
+  const ideasAt = Math.round(b1.start + L * 0.58);
+  const planAt = Math.round(b1.start + L * 0.72);
 
-  const insertIn = b2.start - 6;
-  const insertOut = Math.min(D - 40, b5.end + 26);
+  const lidStart = 10;
+  const insertIn = lidStart + 24;
+  const insertOut = Math.min(D - 26, b1.end + 18);
   const inInsert = frame >= insertIn && frame < insertOut;
 
   // Shot A + C: apartment, lamp on
   const lamp = ramp(frame, [4, 10], [0, 1]);
-  const lidStart = Math.max(12, b1.start + 4);
   const lid = ramp(frame, [lidStart, lidStart + 22], [0, 1], ease.inOut);
   const reach = ramp(frame, [lidStart - 14, lidStart], [0, 1], ease.inOut) * (1 - ramp(frame, [lidStart + 18, lidStart + 30], [0, 1]));
   const openPose = poses.sit({lean: 10, headPitch: 8, armNear: [48, 44], armFar: [20, 70]});
@@ -50,11 +52,11 @@ export const Scene06BuildingAgain: React.FC<SceneProps> = ({scene}) => {
   const cam = frame < insertOut ? mixCam(camA0, camA1, ramp(frame, [0, insertIn], [0, 1], ease.camera)) : mixCam(camC0, camC1, ramp(frame, [insertOut, D], [0, 1], ease.soft));
 
   // Workspace build-up
-  const experience = ramp(frame, [b2.start - 2, b2.end + 6], [0, 1], ease.out);
-  const ideas = ramp(frame, [b3.start - 2, b3.end + 8], [0, 1], ease.out);
-  const build = ramp(frame, [b5.start - 4, insertOut - 6], [0, 1], ease.inOut);
+  const experience = ramp(frame, [expAt - 4, expAt + 14], [0, 1], ease.out);
+  const ideas = ramp(frame, [ideasAt - 4, ideasAt + 14], [0, 1], ease.out);
+  const build = ramp(frame, [planAt - 2, insertOut - 4], [0, 1], ease.inOut);
   const insertP = ramp(frame, [insertIn, insertIn + 10], [0, 1], ease.out) * ramp(frame, [insertOut - 8, insertOut], [1, 0]);
-  const titleAt = b5.start;
+  const titleAt = planAt;
 
   return (
     <AbsoluteFill>
@@ -71,9 +73,7 @@ export const Scene06BuildingAgain: React.FC<SceneProps> = ({scene}) => {
             pose={pose}
             expression={expr}
             lookX={0.7}
-            shade={0.3}
-            light={{color: palette.amber, strength: 0.28, from: 'front'}}
-            rim={{color: '#8fb0ff', strength: 0.28, from: 'back'}}
+            {...lighting.apartmentLamp}
             groundShadow={0}
           />
         }
@@ -101,10 +101,9 @@ export const Scene06BuildingAgain: React.FC<SceneProps> = ({scene}) => {
       <Sfx name="send" at={lidStart} volume={0.3} />
       <Sfx name="typing" at={lidStart + 30} duration={D - lidStart - 30} volume={0.32} fadeIn={8} fadeOut={10} loop />
       <Sfx name="whoosh" at={insertIn - 6} volume={0.35} />
-      <Sfx name="hit" at={b2.start} volume={0.25} />
-      <Sfx name="hit" at={b3.start} volume={0.25} />
-      <Sfx name="hit" at={b4.start} volume={0.2} />
-      <Sfx name="riser" at={Math.max(0, b5.start - 60)} volume={0.35} />
+      <Sfx name="hit" at={expAt} volume={0.25} />
+      <Sfx name="hit" at={ideasAt} volume={0.25} />
+      <Sfx name="riser" at={Math.max(0, planAt - 60)} volume={0.35} />
       <Sfx name="impact" at={titleAt} volume={0.45} />
       <Sfx name="shimmer" at={insertOut - 30} volume={0.5} />
     </AbsoluteFill>

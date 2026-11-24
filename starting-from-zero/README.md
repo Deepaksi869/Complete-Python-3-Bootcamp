@@ -78,7 +78,7 @@ This makes `renders/…-DRAFT-no-narration.mp4`, which is useful for checking th
 - The narration is **never sped up, slowed down or stretched.**
 - Each script line is located in your audio using the natural pauses in the voice.
 - The audio is only ever cut inside those pauses, and the scenes grow or shrink to fit.
-- The video length follows your narration. Read at a natural pace, this script runs about **85–100 seconds**, not 55. If you want it shorter, use the *Speed* slider in ElevenLabs. The project adapts automatically.
+- The video length follows your narration. This script is written for about **50–55 seconds** of natural narration. If the video would go over **60 seconds**, the picture-only pauses (cold open, rewind, title hold) tighten automatically; the voice itself is never changed. Without narration, the preview is set to **55 seconds**.
 - Captions are generated from the script, highlighted word by word, and kept inside Instagram's safe area.
 
 > **Important:** the text in `src/config/episode01.ts` must match what ElevenLabs says. If you change a word in ElevenLabs, change it in the config too, so the captions stay correct.
@@ -87,7 +87,7 @@ This makes `renders/…-DRAFT-no-narration.mp4`, which is useful for checking th
 
 ## Changing the words
 
-Open `src/config/episode01.ts` and edit the `text:` lines. Don't change the `id:` values (`p1`, `p2`, …), because the animation is synced to them.
+Open `src/config/episode01.ts` and edit the `text:` lines. Don't change the `id:` values (`p1`, `p2`, …), because the animation is synced to them. The preview length (`previewTargetSeconds`) and the maximum length (`maxDurationSeconds`) are set at the top of the same file.
 
 ---
 
@@ -118,7 +118,7 @@ The protagonist is a provisional, stylised character. Put 1–3 clear photos of 
 | `src/config/episode01.ts` | **The script** and the scene list (edit this) |
 | `src/config/episodes.json` | Audio folder and output file for each episode |
 | `src/components/Character.tsx` | The reusable protagonist (poses, walk cycle, expressions, head turn) |
-| `src/theme/` | Colours, fonts, character look, Instagram safe areas |
+| `src/theme/` | Colours, fonts, character look, lighting presets, Instagram safe areas |
 | `src/sets/` | Reusable environments: apartment, India office, airport, office entrance, rooftop |
 | `src/scenes/` | The 7 scenes of Episode 01 |
 | `src/components/` | Camera and parallax, typography, captions, laptop and phone UIs, transitions, sound |

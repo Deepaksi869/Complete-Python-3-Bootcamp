@@ -317,33 +317,38 @@ const T_STEPS: number[] = (() => {
   return Array.from(new Set(s)).sort((a, b) => a - b);
 })();
 
+// Short, natural cut: hairline at the forehead, tidy temples, short sides
+// above the ears and a short nape (no long mass at the back).
 const hairline: [number, number][] = [
   [0, -23],
-  [22, -22],
-  [42, -18.5],
-  [62, -12],
-  [80, -6],
-  [96, -3],
-  [120, 5],
-  [150, 13],
-  [180, 14.5],
+  [22, -22.5],
+  [42, -19.5],
+  [62, -14.5],
+  [80, -9.5],
+  [96, -7.5],
+  [108, -3],
+  [122, 5],
+  [145, 10.5],
+  [180, 12],
 ];
+// Neatly trimmed beard: follows the jaw closely, cheeks stay clear.
 const beardTop: [number, number][] = [
-  [0, 11.6],
-  [14, 13.2],
-  [26, 14.2],
-  [45, 11.5],
-  [70, 7.5],
-  [90, 2.5],
-  [104, -1.5],
+  [0, 11.8],
+  [14, 13.6],
+  [26, 16],
+  [45, 16.8],
+  [70, 13],
+  [88, 6],
+  [100, 0],
+  [106, -6.5],
 ];
 const beardBottom: [number, number][] = [
-  [0, 31.2],
-  [30, 29.8],
-  [60, 25.5],
-  [85, 19.5],
-  [100, 13],
-  [104, 8],
+  [0, 29.6],
+  [30, 28.6],
+  [60, 24.6],
+  [85, 18.2],
+  [100, 11],
+  [106, 4],
 ];
 
 type HeadGeometry = {
@@ -389,8 +394,8 @@ const headGeometry = (turn: number): HeadGeometry => {
   const skinPts = outline(levels, () => 1, () => 0, -35.2);
 
   // Hair volume: bigger towards the top, swept slightly forward
-  const hairScale = (y: number) => 1.05 + hv * 0.03 * smoothstep(-22, -34, y);
-  const hairForward = (y: number) => hv * 4.2 * smoothstep(-24, -36, y);
+  const hairScale = (y: number) => 1.035 + hv * 0.04 * smoothstep(-22, -34, y);
+  const hairForward = (y: number) => hv * 3.4 * smoothstep(-24, -36, y);
 
   // Back hair: every point that has hair, drawn behind the face
   const backLevels: number[] = [];
@@ -411,7 +416,7 @@ const headGeometry = (turn: number): HeadGeometry => {
       backL.push({x: mn, y});
     }
   }
-  const topY = -36 - hv * 5.5;
+  const topY = -36 - hv * 4;
   const top0 = backR.length ? (backR[0].x + backL[0].x) / 2 : 0;
   const hairBackPts = [{x: top0 + hv * 2, y: topY}, ...backR, ...backL.reverse()];
 
@@ -438,7 +443,7 @@ const headGeometry = (turn: number): HeadGeometry => {
       for (let k = 0; k <= steps; k++) {
         const tt = lo + ((hi - lo) * k) / steps;
         const edge = k === 0 || k === steps;
-        const sc = y < -22 ? hairScale(y) : 1.035;
+        const sc = y < -22 ? hairScale(y) : 1.03;
         const p = proj(tt, y, edge && (tt === -T || tt === T) ? 1.02 : sc, y < -22 ? hairForward(y) : 0.3);
         mn = Math.min(mn, p.x);
         mx = Math.max(mx, p.x);
@@ -452,9 +457,58 @@ const headGeometry = (turn: number): HeadGeometry => {
     }
   }
 
+  // Textured tufts along the top outline so it clearly reads as hair
+  // (breaks the smooth dome silhouette).
+  const arcL: V[] = [];
+  const arcR: V[] = [];
+  for (let y = -24; y >= -36; y -= 1.5) {
+    let mn = Infinity;
+    let mx = -Infinity;
+    for (let t = tMin; t <= tMax; t += 5) {
+      const p = proj(t, y, hairScale(y), hairForward(y));
+      mn = Math.min(mn, p.x);
+      mx = Math.max(mx, p.x);
+    }
+    arcL.push({x: mn, y});
+    arcR.push({x: mx, y});
+  }
+  const arc = [...arcL, ...[...arcR].reverse()];
+  const cx = (arcL[0].x + arcR[0].x) / 2;
+  const fwd = Math.sin(rad(phi)); // forward sweep is strongest in profile
+  const tufts: string[] = [];
+  arc.forEach((p, i) => {
+    if (i % 2 === 1 && i !== arc.length - 1) return;
+    const r1 = Math.sin(i * 12.9898) * 0.5 + 0.5;
+    let nx = p.x - cx;
+    let ny = p.y + 12;
+    const len = Math.hypot(nx, ny) || 1;
+    nx /= len;
+    ny /= len;
+    const dx = nx * 0.7 + fwd * 0.85;
+    const dy = ny * 0.9 - 0.35;
+    const dl = Math.hypot(dx, dy) || 1;
+    const L = (2.4 + r1 * 2.2) * (0.6 + 0.4 * hv);
+    const tip = {x: p.x + (dx / dl) * L, y: p.y + (dy / dl) * L};
+    const px = -dy / dl;
+    const py = dx / dl;
+    const w = 3.8 + r1 * 1.4;
+    const b1 = {x: p.x + px * w - (dx / dl) * 2.5, y: p.y + py * w - (dy / dl) * 2.5};
+    const b2 = {x: p.x - px * w - (dx / dl) * 2.5, y: p.y - py * w - (dy / dl) * 2.5};
+    tufts.push(`M${f1(b1.x)},${f1(b1.y)}Q${f1((b1.x + tip.x) / 2 + px * 0.8)},${f1((b1.y + tip.y) / 2 + py * 0.8)} ${f1(tip.x)},${f1(tip.y)}Q${f1((b2.x + tip.x) / 2)},${f1((b2.y + tip.y) / 2)} ${f1(b2.x)},${f1(b2.y)}Z`);
+  });
+  // a short fringe flicking up at the front hairline
+  for (let k = 0; k < 4; k++) {
+    const t = -18 + k * 12;
+    const p = proj(t, -23.5 + Math.abs(t) * 0.04, 1.05, 1.5);
+    if (p.depth < 2) continue;
+    const tip = {x: p.x + 2 + fwd * 3, y: p.y - 3.5 - (k % 2)};
+    tufts.push(`M${f1(p.x - 2.8)},${f1(p.y + 1.5)}Q${f1(p.x)},${f1(p.y - 2)} ${f1(tip.x)},${f1(tip.y)}Q${f1(p.x + 1.5)},${f1(p.y)} ${f1(p.x + 2.8)},${f1(p.y + 1.8)}Z`);
+  }
+  hairFront.push(tufts.join(''));
+
   // Beard band (only the part facing the camera)
-  const bMin = Math.max(-104, tMin);
-  const bMax = Math.min(104, tMax);
+  const bMin = Math.max(-106, tMin);
+  const bMax = Math.min(106, tMax);
   const lower: V[] = [];
   const upper: V[] = [];
   const fullness = D.beardFullness;
@@ -466,7 +520,7 @@ const headGeometry = (turn: number): HeadGeometry => {
     upper.push({x: proj(t, yu, 1.025).x, y: yu});
   }
   const beard = lower.length > 1 ? smoothPath([...lower, ...[...upper].reverse()], true, 0.35) : '';
-  const halo = upper.map((p, i) => ({x: p.x, y: p.y - 2.6 + (i === 0 || i === upper.length - 1 ? 1.5 : 0)}));
+  const halo = upper.map((p, i) => ({x: p.x, y: p.y - 1.8 + (i === 0 || i === upper.length - 1 ? 1.2 : 0)}));
   const beardHalo = lower.length > 1 ? smoothPath([...lower, ...[...halo].reverse()], true, 0.35) : '';
 
   return {
@@ -986,16 +1040,22 @@ export const Character: React.FC<CharacterProps> = ({
           />
         </g>
       ))}
-      {/* hair texture: a few strands on the visible side */}
-      {[-33, -28].map((yy, i) => {
-        const ts = [-60, -30, 0, 30].map((k) => k - phi + 40 + i * 12);
-        const pts = ts
-          .map((tt) => ({p: proj(tt, yy, 1.09, 2.5), tt}))
-          .filter((o) => o.p.depth > 4)
-          .map((o, k) => ({x: o.p.x, y: yy - (k % 2) * 2}));
-        return pts.length >= 2 ? (
-          <path key={i} d={smoothPath(pts, false)} stroke={D.hairHighlight} strokeWidth={1.5} fill="none" opacity={0.6} strokeLinecap="round" />
-        ) : null;
+      {/* hair texture: short strand highlights on the visible top */}
+      {[-30, -18, -6, 6, 18].map((tt, i) => {
+        const t = tt - phi * 0.6;
+        const a = proj(t, -27 - (i % 2) * 2, 1.08, 2);
+        const b = proj(t + 6, -32 - (i % 2) * 2, 1.1, 3);
+        if (a.depth < 4 || b.depth < 4) return null;
+        return (
+          <path
+            key={i}
+            d={`M${f1(a.x)},${f1(-27 - (i % 2) * 2)}L${f1(b.x + Math.sin(rad(phi)) * 2)},${f1(-32 - (i % 2) * 2)}`}
+            stroke={D.hairHighlight}
+            strokeWidth={1.3}
+            opacity={0.7}
+            strokeLinecap="round"
+          />
+        );
       })}
     </g>
   );

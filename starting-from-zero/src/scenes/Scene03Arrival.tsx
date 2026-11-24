@@ -25,8 +25,8 @@ export const Scene03Arrival: React.FC<SceneProps> = ({scene}) => {
   const D = scene.durationInFrames;
   const a1 = cue(scene, 'a1');
 
-  const stopStart = Math.max(70, D - 110);
-  const STOP = 24;
+  const stopStart = Math.max(50, D - 78);
+  const STOP = 22;
   const u = ramp(frame, [stopStart, stopStart + STOP], [0, 1], (t) => t);
   const dist = frame < stopStart ? PX_PER_FRAME * frame : PX_PER_FRAME * stopStart + PX_PER_FRAME * STOP * (u - (u * u) / 2);
   const x = 260 + dist;
@@ -35,7 +35,7 @@ export const Scene03Arrival: React.FC<SceneProps> = ({scene}) => {
   const walk = poses.walk(phase, {carry: true, energy: 1 - u * 0.6});
   const stand = poses.stand({armFar: [-24, 6], headPitch: -10, lean: 1});
   let pose = blendPose(walk, stand, ease.inOut(u));
-  const turn = ramp(frame, [stopStart + STOP + 8, stopStart + STOP + 30], [0, 0.55], ease.inOut);
+  const turn = ramp(frame, [stopStart + STOP + 2, stopStart + STOP + 20], [0, 0.55], ease.inOut);
   pose = {...pose, headTurn: turn, headPitch: pose.headPitch + turn * 8};
   const expr = mixExpression(expressions.hopeful, expressions.smile, turn / 0.55);
 
@@ -50,8 +50,8 @@ export const Scene03Arrival: React.FC<SceneProps> = ({scene}) => {
     zoom: 1 + 0.55 * k,
   };
 
-  const t1 = a1.end + 6;
-  const t2 = t1 + 34;
+  const t1 = Math.min(a1.end - 6, D - 60);
+  const t2 = t1 + 22;
 
   return (
     <AbsoluteFill>

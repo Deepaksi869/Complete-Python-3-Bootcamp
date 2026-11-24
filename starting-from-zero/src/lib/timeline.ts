@@ -174,6 +174,54 @@ export const chunkCaption = (text: string, start: number, end: number): CaptionC
 };
 
 export const buildTimeline = (cfg: EpisodeConfig, analysis: AudioAnalysis): Timeline => {
+  const target = cfg.narration.previewTargetSeconds;
+  const hasAudio = analysis.hasVoiceover && analysis.durationSec > 0;
+  if (!hasAudio && target) {
+    // Preview mode: find the speaking pace that makes the episode `target` seconds long.
+    let lo = 1.2;
+    let hi = 6;
+    let best = buildTimelineRaw(cfg, analysis);
+    for (let i = 0; i < 30; i++) {
+      const wps = (lo + hi) / 2;
+      best = buildTimelineRaw({...cfg, narration: {...cfg.narration, estimatedWordsPerSecond: wps}}, analysis);
+      if (best.durationInFrames / cfg.fps > target) lo = wps;
+      else hi = wps;
+    }
+    return best;
+  }
+  const max = cfg.narration.maxDurationSeconds;
+  const full = buildTimelineRaw(cfg, analysis);
+  if (!hasAudio || !max || full.durationInFrames / cfg.fps <= max) return full;
+  // Tighten picture-only pauses (never the narration) until it fits, down to a floor.
+  const tightened = (k: number) =>
+    buildTimelineRaw(
+      {
+        ...cfg,
+        scenes: cfg.scenes.map((s) => ({
+          ...s,
+          leadIn: s.leadIn === undefined ? undefined : Math.max(0.12, s.leadIn * k),
+          tail: s.tail === undefined ? undefined : Math.max(0.2, s.tail * k),
+          minDuration: s.minDuration === undefined ? undefined : s.minDuration * (0.55 + 0.45 * k),
+        })),
+      },
+      analysis,
+    );
+  let lo = 0.35;
+  let hi = 1;
+  let best = tightened(lo);
+  if (best.durationInFrames / cfg.fps > max) return best; // the narration itself needs the time
+  for (let i = 0; i < 20; i++) {
+    const k = (lo + hi) / 2;
+    const t = tightened(k);
+    if (t.durationInFrames / cfg.fps <= max) {
+      best = t;
+      lo = k;
+    } else hi = k;
+  }
+  return best;
+};
+
+const buildTimelineRaw = (cfg: EpisodeConfig, analysis: AudioAnalysis): Timeline => {
   const fps = cfg.fps;
   const flat = cfg.scenes.flatMap((s, sceneIndex) => s.lines.map((line) => ({line, sceneIndex})));
   const useAudio = analysis.hasVoiceover && analysis.durationSec > 0 && flat.length > 0;

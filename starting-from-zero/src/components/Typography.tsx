@@ -41,8 +41,25 @@ export const TitleStack: React.FC<{
   shadow?: boolean;
 }> = ({lines, out, centerY = ANCHORS.headlineCenterY, style = 'slam', align = 'center', size = 150, shadow = true}) => {
   const frame = useCurrentFrame();
+  const first = Math.min(...lines.map((l) => l.at));
+  const scrim = ramp(frame, [first - 4, first + 8], [0, 1]) * ramp(frame, [out, out + 12], [1, 0]);
+  const blockH = lines.reduce((a, l) => a + (l.size ?? size) * 0.95, 0);
   return (
     <AbsoluteFill style={{pointerEvents: 'none'}}>
+      {/* soft dark scrim so titles stay readable over any background */}
+      {shadow && scrim > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            left: -100,
+            right: -100,
+            top: centerY - blockH / 2 - 160,
+            height: blockH + 320,
+            background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(5,8,20,0.55) 0%, rgba(5,8,20,0.25) 55%, rgba(5,8,20,0) 100%)',
+            opacity: scrim,
+          }}
+        />
+      )}
       <div
         style={{
           position: 'absolute',

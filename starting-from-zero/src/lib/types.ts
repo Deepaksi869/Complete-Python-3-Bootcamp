@@ -47,6 +47,17 @@ export type EpisodeConfig = {
     estimatedWordsPerSecond: number;
     /** Estimated pause between lines (preview only). */
     estimatedGap: number;
+    /**
+     * Preview only: when no narration file exists, the estimated speaking
+     * pace is tuned so the whole episode lasts this many seconds.
+     */
+    previewTargetSeconds?: number;
+    /**
+     * With real narration: if the video would be longer than this, the
+     * picture-only pauses (lead-ins, tails, minimum scene lengths) are
+     * tightened automatically. The narration itself is never changed.
+     */
+    maxDurationSeconds?: number;
   };
   mix: {
     voice: number;

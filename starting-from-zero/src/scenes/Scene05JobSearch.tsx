@@ -29,9 +29,9 @@ export const Scene05JobSearch: React.FC<SceneProps> = ({scene}) => {
   const j1 = cue(scene, 'j1');
   const j2 = cue(scene, 'j2');
   const j3 = cue(scene, 'j3');
-  const j4 = cue(scene, 'j4');
 
-  const shotB = Math.round(j1.start + (j1.end - j1.start) * 0.7);
+  // A: applications (j1) → B: walks in, hopeful (j2) → C: walks out, door closes (j3) → D: square one
+  const shotB = j1.end + 2;
   const inInsert = frame < shotB;
 
   /* ---------- Shot A: the application grind ---------- */
@@ -43,9 +43,9 @@ export const Scene05JobSearch: React.FC<SceneProps> = ({scene}) => {
   const G = ENTRANCE.groundY;
   const doorCenter = (ENTRANCE.door.x0 + ENTRANCE.door.x1) / 2;
   const walkInStart = shotB - 4;
-  const walkInEnd = walkInStart + 84;
-  const exitStart = j3.start + 6;
-  const exitEnd = exitStart + 78;
+  const walkInEnd = walkInStart + 60;
+  const exitStart = Math.max(walkInEnd + 26, j3.start + 4);
+  const exitEnd = exitStart + 66;
 
   let x: number;
   let facing: 1 | -1 = 1;
@@ -54,33 +54,33 @@ export const Scene05JobSearch: React.FC<SceneProps> = ({scene}) => {
   let expr = expressions.hopeful;
   if (frame < exitStart) {
     const p = ramp(frame, [walkInStart, walkInEnd], [0, 1], (v) => v);
-    x = lerp(120, 1060, p);
-    phase = ((x - 120) / STRIDE_PX) * Math.PI * 2;
+    x = lerp(220, 1040, p);
+    phase = ((x - 220) / STRIDE_PX) * Math.PI * 2;
     pose = poses.walk(phase, {energy: 1});
   } else {
     facing = -1;
     const p = ramp(frame, [exitStart, exitEnd], [0, 1], (v) => v);
-    x = lerp(1060, 400, ease.soft(p));
-    phase = ((1060 - x) / STRIDE_PX) * Math.PI * 2;
+    x = lerp(1040, 400, ease.soft(p));
+    phase = ((1040 - x) / STRIDE_PX) * Math.PI * 2;
     const stop = ramp(frame, [exitEnd - 22, exitEnd], [0, 1]);
     pose = blendPose(poses.walk(phase, {energy: 0.75}), poses.stand({headPitch: 16, lean: 0, armNear: [2, 8], armFar: [-2, 8]}), stop);
     pose = {...pose, headPitch: pose.headPitch + 10};
-    expr = mixExpression(expressions.sad, expressions.tired, ramp(frame, [j4.start, j4.end], [0, 1]));
+    expr = mixExpression(expressions.sad, expressions.tired, ramp(frame, [exitEnd - 10, D], [0, 1]));
   }
 
   const doorOpen = Math.max(
-    ramp(frame, [walkInStart + 26, walkInStart + 44], [0, 1], ease.inOut) * (1 - ramp(frame, [walkInEnd + 2, walkInEnd + 22], [0, 1], ease.inOut)),
-    ramp(frame, [exitStart - 14, exitStart + 2], [0, 1], ease.inOut) * (1 - ramp(frame, [exitStart + 44, exitStart + 58], [0, 1], ease.in)),
+    ramp(frame, [walkInStart + 20, walkInStart + 34], [0, 1], ease.inOut) * (1 - ramp(frame, [walkInEnd, walkInEnd + 16], [0, 1], ease.inOut)),
+    ramp(frame, [exitStart - 10, exitStart + 2], [0, 1], ease.inOut) * (1 - ramp(frame, [exitStart + 36, exitStart + 48], [0, 1], ease.in)),
   );
-  const dusk = Math.min(1, ramp(frame, [walkInEnd, j3.start], [0, 0.7], ease.inOut) + ramp(frame, [j4.start - 10, D], [0, 0.3]));
-  const interiorOn = 1 - ramp(frame, [exitStart + 64, exitStart + 72], [0, 1]);
-  const square = ramp(frame, [j4.start + 8, j4.start + 40], [0, 1], ease.out);
+  const dusk = Math.min(1, ramp(frame, [walkInEnd, exitStart], [0, 0.7], ease.inOut) + ramp(frame, [exitStart + 30, D], [0, 0.3]));
+  const interiorOn = 1 - ramp(frame, [exitStart + 50, exitStart + 56], [0, 1]);
+  const square = ramp(frame, [exitEnd - 8, exitEnd + 20], [0, 1], ease.out);
 
   const camB = camOn({x: doorCenter - 120, y: G - 300}, 1.05, {x: 540, y: 1000});
   const camD = {...camOn({x: 420, y: G - 250}, 0.88, {x: 540, y: 1080}), rot: 0};
-  const cam = mixCam(camB, camD, ramp(frame, [j4.start - 6, D], [0, 1], ease.camera));
+  const cam = mixCam(camB, camD, ramp(frame, [exitStart + 30, D], [0, 1], ease.camera));
 
-  const titleAt = j2.start + 2;
+  const titleAt = j3.start + 2;
 
   return (
     <AbsoluteFill>
@@ -124,7 +124,7 @@ export const Scene05JobSearch: React.FC<SceneProps> = ({scene}) => {
           {text: "THINGS DIDN'T", at: titleAt},
           {text: 'GO AS PLANNED.', at: titleAt + 8, color: palette.orange},
         ]}
-        out={j3.start + 30}
+        out={Math.min(D - 10, exitEnd)}
         centerY={480}
         style="slam"
         size={150}
@@ -140,13 +140,13 @@ export const Scene05JobSearch: React.FC<SceneProps> = ({scene}) => {
       ))}
       <Sfx name="whoosh" at={shotB - 10} volume={0.4} />
       <Ambience name="city-night" at={shotB - 6} duration={D} volume={0.3} />
-      <Sfx name="door-open" at={walkInStart + 24} volume={0.5} />
-      <Sfx name="door-open" at={walkInEnd + 2} volume={0.35} />
+      <Sfx name="door-open" at={walkInStart + 18} volume={0.5} />
+      <Sfx name="door-open" at={walkInEnd} volume={0.35} />
       <Sfx name="impact" at={titleAt} volume={0.55} />
-      <Sfx name="door-open" at={exitStart - 16} volume={0.45} />
-      <Sfx name="door-close" at={exitStart + 42} volume={0.9} />
-      <Sfx name="atmosphere" at={j3.start} duration={D - j3.start} volume={0.3} fadeIn={30} fadeOut={20} loop />
-      <Sfx name="hit" at={j4.start + 8} volume={0.3} />
+      <Sfx name="door-open" at={exitStart - 12} volume={0.45} />
+      <Sfx name="door-close" at={exitStart + 32} volume={0.9} />
+      <Sfx name="atmosphere" at={j2.start} duration={D - j2.start} volume={0.3} fadeIn={30} fadeOut={20} loop />
+      <Sfx name="hit" at={exitEnd - 8} volume={0.3} />
     </AbsoluteFill>
   );
 };

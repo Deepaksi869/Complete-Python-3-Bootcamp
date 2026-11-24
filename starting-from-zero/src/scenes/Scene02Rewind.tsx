@@ -6,7 +6,6 @@
 import React from 'react';
 import {AbsoluteFill, Freeze, useCurrentFrame} from 'remotion';
 import type {SceneProps} from '../lib/types';
-import {cue} from '../lib/timeline';
 import {Apartment, APT} from '../sets/Apartment';
 import {Character, expressions, poses} from '../components/Character';
 import {camOn, mixCam} from '../components/Background';
@@ -16,6 +15,7 @@ import {Browser, JobBoard} from '../components/ScreenUI';
 import {TitleStack} from '../components/Typography';
 import {Sfx} from '../components/Sound';
 import {palette} from '../theme/palette';
+import {lighting} from '../theme/lighting';
 import {fonts} from '../theme/typography';
 import {clamp, ease, ramp} from '../lib/anim';
 
@@ -102,14 +102,13 @@ const Calendar: React.FC<{start: number; end: number}> = ({start, end}) => {
 export const Scene02Rewind: React.FC<SceneProps> = ({scene}) => {
   const frame = useCurrentFrame();
   const D = scene.durationInFrames;
-  const r1 = cue(scene, 'r1');
-
-  const freezeEnd = 8;
-  const insertStart = 8;
-  const insertEnd = 34;
+  // Short, punchy rewind (no narration): freeze → UI reverses → camera rips back.
+  const freezeEnd = 4;
+  const insertStart = 4;
+  const insertEnd = 18;
   const pullStart = insertEnd;
-  const pullEnd = Math.max(pullStart + 50, D - 28);
-  const titleAt = Math.max(r1.end + 2, pullEnd - 34);
+  const pullEnd = Math.max(pullStart + 30, D - 10);
+  const titleAt = pullStart + 6;
 
   // Camera rips backwards with a twist
   const pull = ramp(frame, [pullStart, pullEnd], [0, 1], ease.inOut);
@@ -125,9 +124,7 @@ export const Scene02Rewind: React.FC<SceneProps> = ({scene}) => {
       pose={poses.sit({lean: 4, headPitch: 2, armNear: [22, 70], armFar: [18, 74], headTurn: 0.55})}
       expression={expressions.wry}
       lookX={0}
-      shade={0.38}
-      light={{color: palette.blue, strength: 0.24, from: 'front'}}
-      rim={{color: '#8fb0ff', strength: 0.3, from: 'back'}}
+      {...lighting.apartmentNight}
       groundShadow={0}
     />
   );
@@ -163,7 +160,7 @@ export const Scene02Rewind: React.FC<SceneProps> = ({scene}) => {
         </AbsoluteFill>
       )}
 
-      <Calendar start={pullStart + 4} end={pullEnd - 4} />
+      <Calendar start={pullStart} end={pullEnd - 2} />
 
       {/* freeze flash */}
       <AbsoluteFill style={{background: '#dfe8ff', opacity: ramp(frame, [0, 6], [0.55, 0]), mixBlendMode: 'screen', pointerEvents: 'none'}} />
@@ -184,10 +181,10 @@ export const Scene02Rewind: React.FC<SceneProps> = ({scene}) => {
       {/* sound */}
       <Sfx name="hit" at={0} volume={0.6} />
       <Sfx name="rewind" at={6} volume={0.75} />
-      {Array.from({length: 10}, (_, k) => (
-        <Sfx key={k} name="page-flip" at={pullStart + 6 + Math.round(Math.pow(k / 10, 0.6) * (pullEnd - pullStart - 12))} volume={0.35} />
+      {Array.from({length: 7}, (_, k) => (
+        <Sfx key={k} name="page-flip" at={pullStart + 6 + Math.round(Math.pow(k / 7, 0.6) * (pullEnd - pullStart - 12))} volume={0.35} />
       ))}
-      <Sfx name="riser" at={Math.max(0, D - 92)} volume={0.45} />
+      <Sfx name="riser" at={0} duration={D} volume={0.35} fadeOut={6} />
       <Sfx name="impact" at={titleAt} volume={0.6} />
       <Sfx name="whoosh" at={Math.max(0, D - 14)} volume={0.6} />
     </AbsoluteFill>

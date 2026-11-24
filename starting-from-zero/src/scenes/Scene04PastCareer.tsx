@@ -19,7 +19,6 @@ export const Scene04PastCareer: React.FC<SceneProps> = ({scene}) => {
   const frame = useCurrentFrame();
   const D = scene.durationInFrames;
   const c1 = cue(scene, 'c1');
-  const c2 = cue(scene, 'c2');
 
   // Slow lateral dolly with a gentle push
   const face = OFFICE.toStage(-52, -236);
@@ -27,9 +26,9 @@ export const Scene04PastCareer: React.FC<SceneProps> = ({scene}) => {
   const end = camOn({x: face.x + 40, y: face.y + 10}, 1.55, {x: 540, y: 860});
   const cam = mixCam(start, end, ramp(frame, [0, D], [0, 1], ease.camera));
 
-  const timeline = ramp(frame, [c2.start - 4, c2.end - 6], [0.1, 1], ease.inOut);
-  const titleAt = Math.min(D - 40, c2.end - 2);
-  const look = ramp(frame, [c1.start + 30, c1.start + 50], [0, 1]) * (1 - ramp(frame, [c2.start + 10, c2.start + 30], [0, 1]));
+  const timeline = ramp(frame, [c1.start, c1.end], [0.1, 1], ease.inOut);
+  const titleAt = Math.min(D - 34, c1.end - 4);
+  const look = ramp(frame, [c1.start + 6, c1.start + 22], [0, 1]) * (1 - ramp(frame, [c1.end - 6, c1.end + 10], [0, 1]));
 
   const pose = poses.sitTyping(frame, 0.9, {headPitch: 6 - look * 10, headTurn: look * 0.18});
 
@@ -51,7 +50,7 @@ export const Scene04PastCareer: React.FC<SceneProps> = ({scene}) => {
           />
         }
       />
-      <LocationStamp text="INDIA · BEFORE THE MOVE" at={10} out={c2.start} color={palette.white} />
+      <LocationStamp text="INDIA · BEFORE THE MOVE" at={4} out={titleAt - 4} color={palette.white} />
       <TitleStack
         lines={[
           {text: "I WASN'T", at: titleAt},
@@ -67,7 +66,7 @@ export const Scene04PastCareer: React.FC<SceneProps> = ({scene}) => {
       <Sfx name="typing" at={0} duration={D} volume={0.3} fadeIn={10} fadeOut={20} loop />
       <Sfx name="atmosphere" at={0} duration={D} volume={0.25} fadeIn={20} fadeOut={20} loop />
       {[0.25, 0.5, 0.75, 1].map((k, i) => (
-        <Sfx key={i} name="hit" at={Math.round(c2.start - 4 + (c2.end - 6 - c2.start + 4) * ((k - 0.1) / 0.9))} volume={0.25} />
+        <Sfx key={i} name="hit" at={Math.round(c1.start + (c1.end - c1.start) * ((k - 0.1) / 0.9))} volume={0.22} />
       ))}
       <Sfx name="impact" at={titleAt} volume={0.55} />
     </AbsoluteFill>

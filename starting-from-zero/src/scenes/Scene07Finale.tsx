@@ -21,11 +21,11 @@ const X = 400;
 export const Scene07Finale: React.FC<SceneProps> = ({scene, episode}) => {
   const frame = useCurrentFrame();
   const D = scene.durationInFrames;
-  const f3 = cue(scene, 'f3');
-  const f4 = cue(scene, 'f4');
-  const f5 = cue(scene, 'f5');
+  // f1: "I don't know where…"  f2: "…document it honestly…" (phone up)  f3: title
+  const f2 = cue(scene, 'f2');
+  const f4 = cue(scene, 'f3');
 
-  const raise = ramp(frame, [f3.start - 12, f3.start + 12], [0, 1], ease.inOut) * (1 - ramp(frame, [f4.start - 16, f4.start + 4], [0, 1], ease.inOut));
+  const raise = ramp(frame, [f2.start - 6, f2.start + 18], [0, 1], ease.inOut) * (1 - ramp(frame, [f4.start - 16, f4.start + 4], [0, 1], ease.inOut));
   let pose = blendPose(poses.standWindow({headPitch: -4}), poses.standRecord(), raise);
   const turn = ramp(frame, [f4.start + 2, f4.start + 26], [0, 0.62], ease.inOut);
   pose = {...pose, headTurn: turn, headPitch: pose.headPitch + turn * 4};
@@ -41,6 +41,7 @@ export const Scene07Finale: React.FC<SceneProps> = ({scene, episode}) => {
   const wider = camOn({x: X + 120, y: ROOF.floorY - 360}, 0.88, {x: 540, y: 1320});
   let cam = mixCam(close, wide, ramp(frame, [0, f4.start], [0, 1], ease.camera));
   cam = mixCam(cam, wider, ramp(frame, [f4.start, D], [0, 1], ease.soft));
+  cam = {...cam, shake: 0.9};
 
   const sun = ramp(frame, [0, D], [0.15, 1], ease.soft);
 
@@ -82,19 +83,19 @@ export const Scene07Finale: React.FC<SceneProps> = ({scene, episode}) => {
         subtitle={episode.endSubtitle}
         episodeLabel={`EPISODE ${String(episode.episodeNumber).padStart(2, '0')}`}
         titleAt={f4.start}
-        episodeAt={f5.start + 2}
-        subtitleAt={Math.min(D - 70, f5.end + 10)}
+        episodeAt={f4.end + 2}
+        subtitleAt={Math.min(D - 50, f4.end + 16)}
         centerY={560}
       />
-      <FadeOut duration={26} total={D} />
+      <FadeOut duration={20} total={D} />
       <Ambience name="dawn" duration={D} volume={0.45} />
       <Sfx name="atmosphere" at={0} duration={D} volume={0.4} fadeIn={30} fadeOut={40} loop />
-      <Sfx name="phone-buzz" at={f3.start} volume={0.15} />
+      <Sfx name="phone-buzz" at={f2.start + 14} volume={0.15} />
       <Sfx name="riser" at={Math.max(0, f4.start - 80)} volume={0.3} />
       <Sfx name="ending" at={f4.start} volume={0.8} />
-      <Sfx name="shimmer" at={f5.start} volume={0.4} />
-      <Sfx name="hit" at={Math.min(D - 70, f5.end + 10)} volume={0.25} />
-      <Sfx name="ending" at={Math.max(0, D - 60)} volume={0.35} />
+      <Sfx name="shimmer" at={f4.end} volume={0.4} />
+      <Sfx name="hit" at={Math.min(D - 50, f4.end + 16)} volume={0.25} />
+      
     </AbsoluteFill>
   );
 };
