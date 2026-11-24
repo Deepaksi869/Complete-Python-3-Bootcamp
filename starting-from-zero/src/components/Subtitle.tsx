@@ -48,20 +48,20 @@ export const Captions: React.FC<{timeline: Timeline}> = ({timeline}) => {
           }}
         >
           {chunk.words.map((w, i) => {
-            const active = frame >= w.start && frame < w.end + 2;
+            const active = frame >= w.start && frame < Math.max(w.end, w.start + 4);
             const spoken = frame >= w.start;
             return (
-              <span
-                key={i}
-                style={{
-                  color: active ? palette.orange : spoken ? palette.white : 'rgba(246,241,232,0.78)',
-                  display: 'inline-block',
-                  transform: active ? 'scale(1.06)' : undefined,
-                  marginRight: i < chunk.words.length - 1 ? '0.26em' : 0,
-                }}
-              >
-                {w.text}
-              </span>
+              <React.Fragment key={i}>
+                <span
+                  style={{
+                    color: active ? palette.orange : spoken ? palette.white : 'rgba(246,241,232,0.78)',
+                    display: 'inline-block',
+                  }}
+                >
+                  {w.text}
+                </span>
+                {i < chunk.words.length - 1 ? ' ' : null}
+              </React.Fragment>
             );
           })}
         </div>
